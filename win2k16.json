@@ -1,6 +1,11 @@
 {
   "builders": [
     {
+      "type": "null",
+      "communicator": "none"
+    },
+    {
+      "vm_name": "vagrant-w2016",
       "type": "virtualbox-iso",
       "vboxmanage": [
         [ "modifyvm", "{{.Name}}", "--memory", "8192" ],
@@ -21,7 +26,7 @@
       "shutdown_timeout": "1h",
       "post_shutdown_delay": "5m",
       "floppy_files": [
-        "./answer_files/2016/Autounattend.xml",
+        "./tmp/Autounattend.xml",
         "./scripts/disable-screensaver.ps1",
         "./scripts/disable-winrm.ps1",
         "./scripts/enable-winrm.ps1",
@@ -29,9 +34,40 @@
         "./scripts/win-updates.ps1",
         "./scripts/oracle-cert.cer"
       ]
+    },
+    {
+      "type": "virtualbox-ovf",
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--memory", "8192" ],
+        [ "modifyvm", "{{.Name}}", "--vram", "48" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "2" ]
+      ],
+      "vm_name": "vagrant-w2016",
+      "source_path": "./output-virtualbox-iso/vagrant-w2016.ovf",
+      "headless": true,
+      "guest_additions_mode": "disable",
+      "boot_wait": "30s",
+      "communicator": "winrm",
+      "winrm_username": "vagrant",
+      "winrm_password": "vagrant",
+      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+      "shutdown_timeout": "1h"
     }
   ],
   "provisioners": [
+    {
+      "type": "shell-local",
+      "command": "powershell -NoProfile -ExecutionPolicy unrestricted -File ./scripts/product-key.ps1 {{ user `product_key` }}",
+      "only": ["null"],
+      "only_on": "windows"
+    },
+    {
+      "type": "powershell",
+      "scripts": [
+        "./scripts/strong-crypto.ps1"
+      ],
+      "only": ["virtualbox-ovf"]
+    },
     {
       "type": "windows-shell",
       "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
@@ -40,16 +76,19 @@
         "./scripts/enable-rdp.bat",
         "./scripts/chocolatey.bat",
         "./scripts/chocopacks.bat"
-      ]
+      ],
+      "only": ["virtualbox-ovf"]
     },
     {
       "type": "powershell",
       "scripts": [
         "./scripts/debloat-windows.ps1"
-      ]
+      ],
+      "only": ["virtualbox-ovf"]
     },
     {
-      "type": "windows-restart"
+      "type": "windows-restart",
+      "only": ["virtualbox-ovf"]
     },
     {
       "type": "windows-shell",
@@ -59,7 +98,8 @@
         "./scripts/compile-dotnet-assemblies.bat",
         "./scripts/uac-enable.bat",
         "./scripts/compact.bat"
-      ]
+      ],
+      "only": ["virtualbox-ovf"]
     }
   ],
   "post-processors": [
@@ -67,13 +107,15 @@
       "type": "vagrant",
       "keep_input_artifact": true,
       "output": "Win2k16-{{.Provider}}.box",
-      "vagrantfile_template": "vagrantfile-windows_2016.template"
+      "vagrantfile_template": "vagrantfile-windows_2016.template",
+      "only": ["virtualbox-ovf"]
     }
   ],
   "variables": {
     "iso_url": "./iso/en_windows_server_2016_updated_feb_2018_x64_dvd_11636692.iso",
     "iso_checksum_type": "md5",
     "iso_checksum": "e8adeebcd8076702593469e33cc2d092",
-    "autounattend": "./answer_files/2016/Autounattend.xml"
+    "autounattend": "./answer_files/2016/Autounattend.xml",
+    "guest_additions_mode": "attach"
   }
 }

@@ -33,5 +33,17 @@ Change your checksum, you will need to get the checksum from the ISO image. Goog
 
 From command prompt (or hopefully PowerShell, bash) browse to the packer folder.
 
-Type packer build Win2k16.json sit back and wait, or do some other work.. This will take HOURS.
-The output of this will be the file Win2k16-virtualbox.box
+The build has been broken down into multiple stages to speed up rebuilds, run the following commands to execute all build stages.
+
+```sh
+# we need to provide -var-file as packer doesn't seem to load it automatically in the current version
+./packer.exe build -only=null -var-file=config.auto.pkrvars.json win2k16.json
+# the next stage is usually the slowest as there are many windows updates to apply
+./packer.exe build -only=virtualbox-iso win2k16.json
+# finally, we apply our customisations
+./packer.exe build -only=virtualbox-ovf win2k16.json
+```
+
+Now just sit back and wait, or do some other work.. This will take HOURS.
+The output of this will be the file Win2k16-virtualbox.box, when updating the image you should increment the version in metadata.json.
+Import the box into vagrant using the command `vagrant box add --name qlik/win2k16 Win2k16-virtualbox.box`.
