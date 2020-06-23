@@ -16,3 +16,7 @@
 tmp
 /issues/
 *.iso
+packer.exe
+*.auto.pkrvars.json
+*.ovf
+*.vmdk
