@@ -1,0 +1,121 @@
+{
+  "builders": [
+    {
+      "type": "null",
+      "communicator": "none"
+    },
+    {
+      "vm_name": "vagrant-w2019",
+      "type": "virtualbox-iso",
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--memory", "8192" ],
+        [ "modifyvm", "{{.Name}}", "--vram", "48" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "2" ]
+      ],
+      "guest_additions_mode": "{{ user `guest_additions_mode` }}",
+      "guest_os_type": "Windows2019_64",
+      "headless": true,
+      "iso_url": "{{ user `iso_url` }}",
+      "iso_checksum": "{{ user `iso_checksum` }}",
+      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "communicator": "winrm",
+      "winrm_username": "vagrant",
+      "winrm_password": "vagrant",
+      "winrm_timeout": "12h",
+      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+      "shutdown_timeout": "1h",
+      "post_shutdown_delay": "5m",
+      "floppy_files": [
+        "./tmp/Autounattend.xml",
+        "./scripts/disable-screensaver.ps1",
+        "./scripts/disable-winrm.ps1",
+        "./scripts/enable-winrm.ps1",
+        "./scripts/microsoft-updates.bat",
+        "./scripts/win-updates.ps1",
+        "./scripts/oracle-cert.cer"
+      ]
+    },
+    {
+      "type": "virtualbox-ovf",
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--memory", "8192" ],
+        [ "modifyvm", "{{.Name}}", "--vram", "48" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "2" ]
+      ],
+      "vm_name": "vagrant-w2019",
+      "source_path": "./output-virtualbox-iso/vagrant-w2019.ovf",
+      "headless": true,
+      "guest_additions_mode": "{{ user `guest_additions_mode` }}",
+      "boot_wait": "30s",
+      "communicator": "winrm",
+      "winrm_username": "vagrant",
+      "winrm_password": "vagrant",
+      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+      "shutdown_timeout": "1h"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell-local",
+      "command": "powershell -NoProfile -ExecutionPolicy unrestricted -File ./scripts/product-key.ps1 {{ user `autounattend` }} {{ user `product_key` }}",
+      "only": ["null"],
+      "only_on": "windows"
+    },
+    {
+      "type": "powershell",
+      "scripts": [
+        "./scripts/strong-crypto.ps1"
+      ],
+      "only": ["virtualbox-ovf"]
+    },
+    {
+      "type": "windows-shell",
+      "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
+      "scripts": [
+        "./scripts/vm-guest-tools.bat",
+        "./scripts/enable-rdp.bat",
+        "./scripts/chocolatey.bat",
+        "./scripts/chocopacks.bat"
+      ],
+      "only": ["virtualbox-ovf"]
+    },
+    {
+      "type": "powershell",
+      "scripts": [
+        "./scripts/debloat-windows.ps1"
+      ],
+      "only": ["virtualbox-ovf"]
+    },
+    {
+      "type": "windows-restart",
+      "only": ["virtualbox-ovf"]
+    },
+    {
+      "type": "windows-shell",
+      "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
+      "scripts": [
+        "./scripts/set-winrm-automatic.bat",
+        "./scripts/compile-dotnet-assemblies.bat",
+        "./scripts/uac-enable.bat",
+        "./scripts/compact.bat"
+      ],
+      "only": ["virtualbox-ovf"]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "keep_input_artifact": false,
+      "output": "Win2k19-{{.Provider}}.box",
+      "vagrantfile_template": "vagrantfile-windows_2019.template",
+      "only": ["virtualbox-ovf"]
+    }
+  ],
+  "variables": {
+    "iso_url": "./iso/en_windows_server_2019_updated_june_2020_x64_dvd_7757177c.iso",
+    "iso_checksum_type": "sha256",
+    "iso_checksum": "5DB996A2CEA3BA5D212C0FC765DD13C6992A2E27AFCB4E3439983FEAC314FCEC",
+    "autounattend": "./answer_files/2019/Autounattend.xml",
+    "guest_additions_mode": "upload"
+  }
+}
