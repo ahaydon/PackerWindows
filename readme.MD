@@ -37,7 +37,7 @@ The build has been broken down into multiple stages to speed up rebuilds, run th
 
 ```sh
 # we need to provide -var-file as packer doesn't seem to load it automatically in the current version
-./packer.exe build -only=null -var-file=config.auto.pkrvars.json win2k16.json
+./packer.exe build -only=null -var-file="config.auto.pkrvars.json" win2k16.json
 # the next stage is usually the slowest as there are many windows updates to apply
 ./packer.exe build -only=virtualbox-iso win2k16.json
 # finally, we apply our customisations
