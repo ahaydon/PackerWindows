@@ -1,5 +1,5 @@
 param (
-    [string]$path,
+    [string]$file,
     [string]$key
 )
 
@@ -12,7 +12,7 @@ if (! (Test-Path .\tmp)) {
     New-Item -Path .\tmp -ItemType Directory
 }
 
-(Get-Content -Path $path -Raw) `
+(Get-Content -Path $file -Raw) `
     -replace '<!-- <Key>xxxxx-xxxxx-xxxxx-xxxxx-xxxxx</Key> -->', "<Key>$key</Key>" `
     -replace '<Key>\w{5}-\w{5}-\w{5}-\w{5}-\w{5}</Key>', "<Key>$key</Key>" |
     Out-File .\tmp\Autounattend.xml -Encoding utf8

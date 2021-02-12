@@ -1,0 +1,124 @@
+{
+  "builders": [
+    {
+      "type": "null",
+      "communicator": "none"
+    },
+    {
+      "vm_name": "vagrant-win10",
+      "type": "virtualbox-iso",
+      "iso_url": "{{user `iso_url`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "communicator": "winrm",
+      "winrm_username": "vagrant",
+      "winrm_password": "vagrant",
+      "winrm_timeout": "12h",
+      "headless": "{{user `headless`}}",
+      "boot_wait": "2m",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_wait_timeout": "2h",
+      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+      "guest_os_type": "Windows10_64",
+      "guest_additions_mode": "disable",
+      "output_directory": "output-win10-virtualbox-iso",
+      "disk_size": "{{user `disk_size`}}",
+      "floppy_files": [
+        "./tmp/Autounattend.xml",
+        "./scripts/fixnetwork.ps1",
+        "./scripts/disable-winrm.ps1",
+        "./scripts/enable-winrm.ps1",
+        "./scripts/microsoft-updates.bat",
+        "./scripts/win-updates.ps1",
+        "./scripts/oracle-cert.cer"
+      ],
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "{{user `memory_size`}}"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--cpus",
+          "{{user `cpus`}}"
+        ]
+      ]
+    },
+    {
+      "type": "virtualbox-ovf",
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--memory", "{{user `memory_size`}}" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}" ]
+      ],
+      "vm_name": "vagrant-win10",
+      "source_path": "./output-win10-virtualbox-iso/vagrant-win10.ovf",
+      "headless": true,
+      "guest_additions_mode": "upload",
+      "output_directory": "output-win10-virtualbox-ovf",
+      "boot_wait": "30s",
+      "communicator": "winrm",
+      "winrm_username": "vagrant",
+      "winrm_password": "vagrant",
+      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+      "shutdown_timeout": "1h"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell-local",
+      "command": "powershell -NoProfile -ExecutionPolicy unrestricted -File ./scripts/product-key.ps1  ./answer_files/10/Autounattend.xml {{ user `win10_key` }}",
+      "only": ["null"],
+      "only_on": "windows"
+    },
+    {
+      "type": "shell-local",
+      "command": "sh ./scripts/product-key.sh ./answer_files/10/Autounattend.xml {{ user `win10_key` }}",
+      "only": ["null"],
+      "only_on": "linux"
+    },
+    {
+      "type": "powershell",
+      "scripts": [
+        "./scripts/strong-crypto.ps1"
+      ],
+      "only": ["virtualbox-ovf"]
+    },
+    {
+      "type": "windows-shell",
+      "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
+      "scripts": [
+        "./scripts/vm-guest-tools.bat",
+        "./scripts/disable-auto-logon.bat",
+        "./scripts/enable-rdp.bat",
+        "./scripts/chocolatey.bat",
+        "./scripts/chocopacks.bat",
+        "./scripts/compile-dotnet-assemblies.bat",
+        "./scripts/compact.bat"
+      ],
+      "only": ["virtualbox-ovf"]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "keep_input_artifact": false,
+      "output": "windows-10-{{.Provider}}.box",
+      "vagrantfile_template": "vagrantfile-windows_10.template",
+      "only": ["virtualbox-ovf"]
+    }
+  ],
+  "variables": {
+    "iso_url": "./iso/en-gb_windows_10_business_editions_version_1909_updated_july_2020_x64_dvd_c079f821.iso",
+    "iso_checksum_type": "sha256",
+    "iso_checksum": "A3E152F013F6B00D3A2D9A4EAEB2360185D85EE76DAE1E3ADFDEC43EF49A2FCC",
+    "autounattend": "./answer_files/10/Autounattend.xml",
+    "headless": "true",
+    "cpus": "2",
+    "memory_size": "2048",
+    "disk_size": "61440"
+  }
+}
