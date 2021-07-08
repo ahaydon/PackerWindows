@@ -8,17 +8,19 @@
       "vm_name": "vagrant-w2012",
       "type": "virtualbox-iso",
       "vboxmanage": [
-        [ "modifyvm", "{{.Name}}", "--memory", "4096" ],
+        [ "modifyvm", "{{.Name}}", "--memory", "{{user `memory_size`}}" ],
         [ "modifyvm", "{{.Name}}", "--vram", "48" ],
-        [ "modifyvm", "{{.Name}}", "--cpus", "2" ]
+        [ "modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}" ]
       ],
-      "guest_additions_mode": "disable",
+      "guest_additions_mode": "upload",
       "guest_os_type": "Windows2012_64",
       "headless": true,
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
-      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
       "output_directory": "output-win2k12-virtualbox-iso",
+      "disk_size": "{{user `disk_size`}}",
+      "hard_drive_nonrotational": true,
+      "hard_drive_discard": true,
       "communicator": "winrm",
       "winrm_username": "vagrant",
       "winrm_password": "vagrant",
@@ -35,40 +37,27 @@
         "./scripts/win-updates.ps1",
         "./scripts/oracle-cert.cer"
       ]
-    },
-    {
-      "type": "virtualbox-ovf",
-      "vboxmanage": [
-        [ "modifyvm", "{{.Name}}", "--memory", "4096" ],
-        [ "modifyvm", "{{.Name}}", "--vram", "48" ],
-        [ "modifyvm", "{{.Name}}", "--cpus", "2" ]
-      ],
-      "vm_name": "vagrant-w2012",
-      "source_path": "./output-win2k12-virtualbox-iso/vagrant-w2012.ovf",
-      "headless": true,
-      "output_directory": "output-win2k12-virtualbox-ovf",
-      "guest_additions_mode": "{{ user `guest_additions_mode` }}",
-      "boot_wait": "30s",
-      "communicator": "winrm",
-      "winrm_username": "vagrant",
-      "winrm_password": "vagrant",
-      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
-      "shutdown_timeout": "1h"
     }
   ],
   "provisioners": [
     {
       "type": "shell-local",
-      "command": "powershell -NoProfile -ExecutionPolicy unrestricted -File ./scripts/product-key.ps1 {{ user `autounattend` }} {{ user `product_key` }}",
+      "command": "powershell -NoProfile -ExecutionPolicy unrestricted -File ./scripts/product-key.ps1 {{ user `autounattend` }} {{ user `win2019_key` }}",
       "only": ["null"],
       "only_on": "windows"
+    },
+    {
+      "type": "shell-local",
+      "command": "sh ./scripts/product-key.sh {{ user `autounattend` }} {{ user `win2019_key` }}",
+      "only": ["null"],
+      "only_on": "linux"
     },
     {
       "type": "powershell",
       "scripts": [
         "./scripts/strong-crypto.ps1"
       ],
-      "only": ["virtualbox-ovf"]
+      "only": ["virtualbox-iso"]
     },
     {
       "type": "windows-shell",
@@ -79,18 +68,27 @@
         "./scripts/chocolatey.bat",
         "./scripts/chocopacks.bat"
       ],
-      "only": ["virtualbox-ovf"]
+      "only": ["virtualbox-iso"]
     },
     {
       "type": "powershell",
       "scripts": [
         "./scripts/debloat-windows.ps1"
       ],
-      "only": ["virtualbox-ovf"]
+      "only": ["virtualbox-iso"]
+    },
+    {
+      "type": "windows-shell",
+      "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
+      "valid_exit_codes": [0, 1641, 3010],
+      "scripts": [
+        "./scripts/installnet4.bat"
+      ],
+      "only": ["virtualbox-iso"]
     },
     {
       "type": "windows-restart",
-      "only": ["virtualbox-ovf"]
+      "only": ["virtualbox-iso"]
     },
     {
       "type": "windows-shell",
@@ -101,7 +99,7 @@
         "./scripts/uac-enable.bat",
         "./scripts/compact.bat"
       ],
-      "only": ["virtualbox-ovf"]
+      "only": ["virtualbox-iso"]
     }
   ],
   "post-processors": [
@@ -110,15 +108,15 @@
       "keep_input_artifact": false,
       "output": "Win2k12-{{.Provider}}.box",
       "vagrantfile_template": "vagrantfile-windows_2012.template",
-      "only": ["virtualbox-ovf"]
+      "only": ["virtualbox-iso"]
     }
   ],
   "variables": {
     "iso_url": "./iso/en_windows_server_2012_r2_with_update_x64_dvd_6052708.iso",
-    "iso_checksum_type": "sha1",
     "iso_checksum": "865494E969704BE1C4496D8614314361D025775E",
     "autounattend": "./answer_files/2012/Autounattend.xml",
-    "guest_additions_mode": "upload",
-    "product_key": "{{ user `win2012_key` }}"
+    "cpus": "2",
+    "memory_size": "4096",
+    "disk_size": "61440"
   }
 }
