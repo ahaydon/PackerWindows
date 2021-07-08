@@ -1,12 +1,7 @@
 .DS_Store
 /iso/*
 !/iso/README.md
-/output-vmware/
-/output-vmware-iso/
-/output-vmware-vmx/
-/output-virtualbox/
-/output-virtualbox-iso/
-/output-virtualbox-ovf/
+/output-*/
 /*.box
 /packer_cache/
 *.log
@@ -16,3 +11,8 @@
 tmp
 /issues/
 *.iso
+packer.exe
+*.auto.pkrvars.json
+*.ovf
+*.vmdk
+variables.json

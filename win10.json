@@ -5,7 +5,7 @@
       "communicator": "none"
     },
     {
-      "vm_name": "vagrant-w2016",
+      "vm_name": "vagrant-win10",
       "type": "virtualbox-iso",
       "vboxmanage": [
         [ "modifyvm", "{{.Name}}", "--memory", "{{user `memory_size`}}" ],
@@ -13,11 +13,11 @@
         [ "modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}" ]
       ],
       "guest_additions_mode": "upload",
-      "guest_os_type": "Windows2016_64",
+      "guest_os_type": "Windows10_64",
       "headless": true,
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
-      "output_directory": "output-win2k16-virtualbox-iso",
+      "output_directory": "output-win10-virtualbox-iso",
       "disk_size": "{{user `disk_size`}}",
       "hard_drive_nonrotational": true,
       "hard_drive_discard": true,
@@ -28,6 +28,7 @@
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
       "shutdown_timeout": "1h",
       "post_shutdown_delay": "5m",
+      "boot_wait": "2m",
       "floppy_files": [
         "./tmp/Autounattend.xml",
         "./scripts/disable-screensaver.ps1",
@@ -35,20 +36,21 @@
         "./scripts/enable-winrm.ps1",
         "./scripts/microsoft-updates.bat",
         "./scripts/win-updates.ps1",
-        "./scripts/oracle-cert.cer"
+        "./scripts/oracle-cert.cer",
+        "./scripts/fixnetwork.ps1"
       ]
     }
   ],
   "provisioners": [
     {
       "type": "shell-local",
-      "command": "powershell -NoProfile -ExecutionPolicy unrestricted -File ./scripts/product-key.ps1 {{ user `autounattend` }} {{ user `win2016_key` }}",
+      "command": "powershell -NoProfile -ExecutionPolicy unrestricted -File ./scripts/product-key.ps1 {{ user `autounattend` }} {{ user `win10_key` }}",
       "only": ["null"],
       "only_on": "windows"
     },
     {
       "type": "shell-local",
-      "command": "sh ./scripts/product-key.sh {{ user `autounattend` }} {{ user `win2016_key` }}",
+      "command": "sh ./scripts/product-key.sh {{ user `autounattend` }} {{ user `win10_key` }}",
       "only": ["null"],
       "only_on": "linux"
     },
@@ -64,39 +66,11 @@
       "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
       "scripts": [
         "./scripts/vm-guest-tools.bat",
+        "./scripts/disable-auto-logon.bat",
         "./scripts/enable-rdp.bat",
         "./scripts/chocolatey.bat",
-        "./scripts/chocopacks.bat"
-      ],
-      "only": ["virtualbox-iso"]
-    },
-    {
-      "type": "powershell",
-      "scripts": [
-        "./scripts/debloat-windows.ps1"
-      ],
-      "only": ["virtualbox-iso"]
-    },
-    {
-      "type": "windows-shell",
-      "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
-      "valid_exit_codes": [0, 1641, 3010],
-      "scripts": [
-        "./scripts/installnet4.bat"
-      ],
-      "only": ["virtualbox-iso"]
-    },
-    {
-      "type": "windows-restart",
-      "only": ["virtualbox-iso"]
-    },
-    {
-      "type": "windows-shell",
-      "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
-      "scripts": [
-        "./scripts/set-winrm-automatic.bat",
+        "./scripts/chocopacks.bat",
         "./scripts/compile-dotnet-assemblies.bat",
-        "./scripts/uac-enable.bat",
         "./scripts/compact.bat"
       ],
       "only": ["virtualbox-iso"]
@@ -106,17 +80,17 @@
     {
       "type": "vagrant",
       "keep_input_artifact": false,
-      "output": "Win2k16-{{.Provider}}.box",
-      "vagrantfile_template": "vagrantfile-windows_2016.template",
+      "output": "windows-10-{{.Provider}}.box",
+      "vagrantfile_template": "vagrantfile-windows_10.template",
       "only": ["virtualbox-iso"]
     }
   ],
   "variables": {
-    "iso_url": "./iso/en_windows_server_2016_updated_feb_2018_x64_dvd_11636692.iso",
-    "iso_checksum": "e8adeebcd8076702593469e33cc2d092",
-    "autounattend": "./answer_files/2016/Autounattend.xml",
-    "cpus": "4",
-    "memory_size": "8192",
+    "iso_url": "./iso/en-gb_windows_10_business_editions_version_1909_updated_july_2020_x64_dvd_c079f821.iso",
+    "iso_checksum": "A3E152F013F6B00D3A2D9A4EAEB2360185D85EE76DAE1E3ADFDEC43EF49A2FCC",
+    "autounattend": "./answer_files/10/Autounattend.xml",
+    "cpus": "2",
+    "memory_size": "2048",
     "disk_size": "61440"
   }
 }

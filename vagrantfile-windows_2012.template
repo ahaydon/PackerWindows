@@ -4,8 +4,8 @@
 Vagrant.require_version ">= 1.6.2"
 
 Vagrant.configure("2") do |config|
-    config.vm.define "vagrant-windows-2016"
-    config.vm.box = "windows_2016"
+    config.vm.define "vagrant-windows-2012"
+    config.vm.box = "windows_2012"
     config.vm.communicator = "winrm"
 
     # Admin user name and password
@@ -20,7 +20,7 @@ Vagrant.configure("2") do |config|
 
     config.vm.provider :virtualbox do |v, override|
         #v.gui = true
-        v.customize ["modifyvm", :id, "--memory", 8192]
+        v.customize ["modifyvm", :id, "--memory", 4096]
         v.customize ["modifyvm", :id, "--cpus", 2]
         v.customize ["setextradata", "global", "GUI/SuppressMessages", "all" ]
     end

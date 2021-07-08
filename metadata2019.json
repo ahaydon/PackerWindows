@@ -1,0 +1,10 @@
+{
+    "name": "qlik/win2k19",
+    "versions": [{
+        "version": "0.1.2",
+        "providers": [{
+            "name": "virtualbox",
+            "url": "Win2k19-virtualbox.box"
+        }]
+    }]
+}

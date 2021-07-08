@@ -5,7 +5,7 @@
       "communicator": "none"
     },
     {
-      "vm_name": "vagrant-w2016",
+      "vm_name": "vagrant-w2012",
       "type": "virtualbox-iso",
       "vboxmanage": [
         [ "modifyvm", "{{.Name}}", "--memory", "{{user `memory_size`}}" ],
@@ -13,11 +13,11 @@
         [ "modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}" ]
       ],
       "guest_additions_mode": "upload",
-      "guest_os_type": "Windows2016_64",
+      "guest_os_type": "Windows2012_64",
       "headless": true,
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
-      "output_directory": "output-win2k16-virtualbox-iso",
+      "output_directory": "output-win2k12-virtualbox-iso",
       "disk_size": "{{user `disk_size`}}",
       "hard_drive_nonrotational": true,
       "hard_drive_discard": true,
@@ -42,13 +42,13 @@
   "provisioners": [
     {
       "type": "shell-local",
-      "command": "powershell -NoProfile -ExecutionPolicy unrestricted -File ./scripts/product-key.ps1 {{ user `autounattend` }} {{ user `win2016_key` }}",
+      "command": "powershell -NoProfile -ExecutionPolicy unrestricted -File ./scripts/product-key.ps1 {{ user `autounattend` }} {{ user `win2019_key` }}",
       "only": ["null"],
       "only_on": "windows"
     },
     {
       "type": "shell-local",
-      "command": "sh ./scripts/product-key.sh {{ user `autounattend` }} {{ user `win2016_key` }}",
+      "command": "sh ./scripts/product-key.sh {{ user `autounattend` }} {{ user `win2019_key` }}",
       "only": ["null"],
       "only_on": "linux"
     },
@@ -106,17 +106,17 @@
     {
       "type": "vagrant",
       "keep_input_artifact": false,
-      "output": "Win2k16-{{.Provider}}.box",
-      "vagrantfile_template": "vagrantfile-windows_2016.template",
+      "output": "Win2k12-{{.Provider}}.box",
+      "vagrantfile_template": "vagrantfile-windows_2012.template",
       "only": ["virtualbox-iso"]
     }
   ],
   "variables": {
-    "iso_url": "./iso/en_windows_server_2016_updated_feb_2018_x64_dvd_11636692.iso",
-    "iso_checksum": "e8adeebcd8076702593469e33cc2d092",
-    "autounattend": "./answer_files/2016/Autounattend.xml",
-    "cpus": "4",
-    "memory_size": "8192",
+    "iso_url": "./iso/en_windows_server_2012_r2_with_update_x64_dvd_6052708.iso",
+    "iso_checksum": "865494E969704BE1C4496D8614314361D025775E",
+    "autounattend": "./answer_files/2012/Autounattend.xml",
+    "cpus": "2",
+    "memory_size": "4096",
     "disk_size": "61440"
   }
 }

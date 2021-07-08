@@ -1,10 +1,10 @@
 {
-    "name": "qlik/win2k16",
+    "name": "qlik/win2k12",
     "versions": [{
         "version": "0.1.1",
         "providers": [{
             "name": "virtualbox",
-            "url": "Win2k16-virtualbox.box"
+            "url": "Win2k12-virtualbox.box"
         }]
     }]
 }
