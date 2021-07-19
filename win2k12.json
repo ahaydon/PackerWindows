@@ -42,13 +42,13 @@
   "provisioners": [
     {
       "type": "shell-local",
-      "command": "powershell -NoProfile -ExecutionPolicy unrestricted -File ./scripts/product-key.ps1 {{ user `autounattend` }} {{ user `win2019_key` }}",
+      "command": "powershell -NoProfile -ExecutionPolicy unrestricted -File ./scripts/product-key.ps1 {{ user `autounattend` }} {{ user `win2012_key` }}",
       "only": ["null"],
       "only_on": "windows"
     },
     {
       "type": "shell-local",
-      "command": "sh ./scripts/product-key.sh {{ user `autounattend` }} {{ user `win2019_key` }}",
+      "command": "sh ./scripts/product-key.sh {{ user `autounattend` }} {{ user `win2012_key` }}",
       "only": ["null"],
       "only_on": "linux"
     },
@@ -88,6 +88,7 @@
     },
     {
       "type": "windows-restart",
+      "restart_timeout": "15m",
       "only": ["virtualbox-iso"]
     },
     {

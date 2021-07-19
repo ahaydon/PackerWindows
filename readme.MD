@@ -5,18 +5,18 @@ This box is fully updated (although this can be changed through the Autounattend
 
 ## What you will need
 
-    - The latest version of Packer (https://www.packer.io/downloads.html)
-    - A Windows Server 201x ISO
-    - A decent text editor (I recommend Visual Studio Code (its free and very powerful))
-    - Some knowledge about Packer, JSON and PowerShell (this document will attempt to explain everything)
-    - Time, building a box takes hours, SERIOUSLY, this is not a joke,  it takes Hours.
+- The latest version of Packer (https://www.packer.io/downloads.html)
+- A Windows Server 201x ISO (https://my.visualstudio.com/Downloads)
+- A decent text editor (I recommend Visual Studio Code (its free and very powerful))
+- Some knowledge about Packer, JSON and PowerShell (this document will attempt to explain everything)
+- Time, building a box takes hours, SERIOUSLY, this is not a joke,  it takes Hours.
 
 ## Important files
 
-    - answer_files/201x	This folder contains the Windows Server Autounattend answer file.  This XML file is used by to automate the installation of Windows Server.
-    - iso	Put your Windows Server 2016 ISO file in this folder.
-    - scripts	This folder has a number of scripts that can be provisioned during the creation of the Box file.  You can either add new scripts or edit existing ones.  For example if you wanted a particular application installed this is where you would put the script.
-    - windows_201x.json	This JSON file is used by Packer to generate the box.
+- answer_files/201x - This folder contains the Windows Server Autounattend answer file.  This XML file is used by to automate the installation of Windows Server.
+- iso - Put your Windows Server 2016 ISO file in this folder.
+- scripts - This folder has a number of scripts that can be provisioned during the creation of the Box file.  You can either add new scripts or edit existing ones.  For example if you wanted a particular application installed this is where you would put the script.
+- windows_201x.json - This JSON file is used by Packer to generate the box.
 
 ## Chocolatey Package Manager
 
@@ -47,7 +47,14 @@ From command prompt (or hopefully PowerShell, bash) browse to the packer folder.
 Run the command below making sure to replace the variables file with the name you used earlier when creating the file.
 
 ```sh
-./packer.exe build -var-file=variables.json win2k19.json
+# if packer is saved in your path
+packer build -var-file=variables.json win2k19.json
+
+# if packer is in the project directory
+./packer build -var-file=variables.json win2k19.json
+
+# if using WSL you need to append .exe to packer
+packer.exe build -var-file=variables.json win2k19.json
 ```
 
 Now just sit back and wait, or do some other work.. This will take HOURS.

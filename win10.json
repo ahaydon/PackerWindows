@@ -86,11 +86,11 @@
     }
   ],
   "variables": {
-    "iso_url": "./iso/en-gb_windows_10_business_editions_version_1909_updated_july_2020_x64_dvd_c079f821.iso",
-    "iso_checksum": "A3E152F013F6B00D3A2D9A4EAEB2360185D85EE76DAE1E3ADFDEC43EF49A2FCC",
+    "iso_url": "./iso/en-gb_windows_10_business_editions_version_2004_updated_jun_2021_x64_dvd_f0c8c3a7.iso",
+    "iso_checksum": "84A58260742F87D8FE167F87EC905AD3E885EB65359CAA274F4BF47E174A920F",
     "autounattend": "./answer_files/10/Autounattend.xml",
     "cpus": "2",
-    "memory_size": "2048",
+    "memory_size": "4096",
     "disk_size": "61440"
   }
 }

@@ -88,6 +88,7 @@
     },
     {
       "type": "windows-restart",
+      "restart_timeout": "15m",
       "only": ["virtualbox-iso"]
     },
     {
